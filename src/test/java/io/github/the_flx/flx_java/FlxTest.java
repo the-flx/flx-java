@@ -1,4 +1,4 @@
-package org.the_flx.flx;
+package io.github.the_flx.flx_java;
 
 import org.junit.jupiter.api.Test;
 
