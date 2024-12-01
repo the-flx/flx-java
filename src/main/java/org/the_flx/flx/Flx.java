@@ -1,5 +1,6 @@
 package org.the_flx.flx;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class Flx {
@@ -19,7 +20,7 @@ public class Flx {
      * @param ch The character to test.
      * @return True if CH is a word character.
      */
-    public static Boolean word(Character ch) {
+    private static Boolean word(Character ch) {
         if (ch == null)
             return false;
 
@@ -32,7 +33,7 @@ public class Flx {
      * @param ch The chacater to test.
      * @return True if the CH is a Capital character.
      */
-    public static Boolean capital(Character ch) {
+    private static Boolean capital(Character ch) {
         return word(ch) && ch == Character.toUpperCase(ch);
     }
 
@@ -43,7 +44,7 @@ public class Flx {
      * @param ch     The current character we are checking with.
      * @return True if CH is at the boundary.
      */
-    public static Boolean boundary(Character lastCh, Character ch) {
+    private static Boolean boundary(Character lastCh, Character ch) {
         if (lastCh == null)
             return true;
 
@@ -64,7 +65,7 @@ public class Flx {
      * @param beg The starting index.
      * @param end The end index.
      */
-    public static void incVec(List<Integer> vec, Integer inc, Integer beg, Integer end) {
+    private static void incVec(List<Integer> vec, Integer inc, Integer beg, Integer end) {
         int _inc = (inc == null) ? 1 : inc;
         int _beg = (beg == null) ? 0 : beg;
         int _end = (end == null) ? vec.size() : end;
@@ -76,8 +77,17 @@ public class Flx {
     }
 
     /**
+     * Return hash-table for string where keys are characters.
+     * Value is a sorted list of indexes for character occurrences.
+     */
+    private static void getHashForString(HashMap<Integer, List<Integer>> result, String str) {
+        // TODO: ..
+    }
+
+    /**
      * Return best score matching QUERY against STR.
-     * @param str The string to be scored.
+     *
+     * @param str   The string to be scored.
      * @param query The query use to score STR.
      * @return Return the scoring object.
      */
