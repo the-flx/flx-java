@@ -5,6 +5,8 @@
 # flx-java
 > Rewrite emacs-flx in Java
 
+[![CI](https://github.com/the-flx/flx-java/actions/workflows/test.yml/badge.svg)](https://github.com/the-flx/flx-java/actions/workflows/test.yml)
+
 ## 🔨 Usage
 
 ```java
