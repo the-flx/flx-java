@@ -35,7 +35,7 @@ public class Util {
             result.put(key, new LinkedList<Integer>());
 
         LinkedList<Integer> lst = result.get(key);
-        lst.add(0, val);
+        lst.addFirst(val);
     }
 
     /* Setter & Getter */

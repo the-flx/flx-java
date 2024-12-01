@@ -20,7 +20,7 @@ public class Flx {
     private static Boolean word(Character ch) {
         if (ch == null) return false;
 
-        return List.of(WORD_SEPARATORS).contains(ch);
+        return !Arrays.asList(WORD_SEPARATORS).contains(ch);
     }
 
     /**
@@ -79,7 +79,7 @@ public class Flx {
         int strLen = str.length();
         int index = strLen - 1;
         char ch;
-        char downCh;
+        int downCh;
 
         while (0 <= index) {
             ch = str.charAt(index);
@@ -106,13 +106,14 @@ public class Flx {
         int strLastIndex = strLen - 1;
         scores.clear();
 
-        for (int i = 0; i < strLen; ++i)
+        for (int i = 0; i < strLen; ++i) {
             scores.add(DEFAULT_SCORE);
+        }
 
         int penaltyLead = (int) '.';
 
         var inner = new LinkedList<Integer>(Arrays.asList(-1, 0));
-        var groupAlist = new LinkedList<LinkedList<Integer>>(Arrays.asList(inner));
+        var groupAlist = new LinkedList<LinkedList<Integer>>(List.of(inner));
 
         // final char bonus
         scores.set(strLastIndex, scores.get(strLastIndex) + 1);
@@ -145,7 +146,7 @@ public class Flx {
                 groupAlist.getFirst().set(1, groupWordCount);
 
                 groupWordCount = 0;
-                groupAlist.add(0, new LinkedList<Integer>(Arrays.asList(index1, groupWordCount)));
+                groupAlist.addFirst(new LinkedList<Integer>(Arrays.asList(index1, groupWordCount)));
             }
 
             if (index1 == strLastIndex) {
@@ -155,78 +156,78 @@ public class Flx {
             }
 
             ++index1;
+        }
 
-            int groupCount = groupAlist.size();
-            int separatorCount = groupCount - 1;
+        int groupCount = groupAlist.size();
+        int separatorCount = groupCount - 1;
 
-            // ++++ slash group-count penalty
-            if (separatorCount != 0) {
-                incVec(scores, groupCount * -2, null, null);
+        // ++++ slash group-count penalty
+        if (separatorCount != 0) {
+            incVec(scores, groupCount * -2, null, null);
+        }
+
+        int index2 = separatorCount;
+        Integer lastGroupLimit = null;
+        boolean basepathFound = false;
+
+        // score each group further
+        for (LinkedList<Integer> group : groupAlist) {
+            int groupStart = group.get(0);
+            int wordCount = group.get(1);
+            // this is the number of effective word groups
+            int wordsLength = group.size() - 2;
+            boolean basepathP = false;
+
+            if (wordsLength != 0 && !basepathFound) {
+                basepathFound = true;
+                basepathP = true;
             }
 
-            int index2 = separatorCount;
-            Integer lastGroupLimit = null;
-            boolean basepathFound = false;
-
-            // score each group further
-            for (LinkedList<Integer> group : groupAlist) {
-                int groupStart = group.get(0);
-                int wordCount = group.get(1);
-                // this is the number of effective word groups
-                int wordsLength = group.size() - 2;
-                boolean basepathP = false;
-
-                if (wordsLength != 0 && !basepathFound) {
-                    basepathFound = true;
-                    basepathP = true;
-                }
-
-                int num;
-                if (basepathP) {
-                    // ++++ basepath separator-count boosts
-                    int boosts = 0;
-                    if (separatorCount > 1) boosts = separatorCount - 1;
-                    // ++++ basepath word count penalty
-                    int penalty = -wordCount;
-                    num = 35 + boosts + penalty;
-                }
-                // ++++ non-basepath penalties
-                else {
-                    if (index2 == 0) num = -3;
-                    else num = -5 + (index2 - 1);
-                }
-
-                incVec(scores, num, groupStart + 1, lastGroupLimit);
-
-                var cddrGroup = new LinkedList<Integer>(group);  // clone it
-                cddrGroup.removeFirst();
-                cddrGroup.removeFirst();
-
-                int wordIndex = wordsLength - 1;
-                int lastWord = (lastGroupLimit != null) ? lastGroupLimit : strLen;
-
-                for (int word : cddrGroup) {
-                    // ++++  beg word bonus AND
-                    scores.set(word, scores.get(word) + 85);
-
-                    int index3 = word;
-                    int charI = 0;
-
-                    while (index3 < lastWord) {
-                        scores.set(index3, scores.get(index3) + (-3 * wordIndex) -  // ++++ word order penalty
-                                charI);  // ++++ char order penalty
-
-                        ++charI;
-                        ++index3;
-                    }
-
-                    lastWord = word;
-                    --wordIndex;
-                }
-
-                lastGroupLimit = groupStart + 1;
-                --index2;
+            int num;
+            if (basepathP) {
+                // ++++ basepath separator-count boosts
+                int boosts = 0;
+                if (separatorCount > 1) boosts = separatorCount - 1;
+                // ++++ basepath word count penalty
+                int penalty = -wordCount;
+                num = 35 + boosts + penalty;
             }
+            // ++++ non-basepath penalties
+            else {
+                if (index2 == 0) num = -3;
+                else num = -5 + (index2 - 1);
+            }
+
+            incVec(scores, num, groupStart + 1, lastGroupLimit);
+
+            var cddrGroup = new LinkedList<Integer>(group);  // clone it
+            cddrGroup.removeFirst();
+            cddrGroup.removeFirst();
+
+            int wordIndex = wordsLength - 1;
+            int lastWord = (lastGroupLimit != null) ? lastGroupLimit : strLen;
+
+            for (int word : cddrGroup) {
+                // ++++  beg word bonus AND
+                scores.set(word, scores.get(word) + 85);
+
+                int index3 = word;
+                int charI = 0;
+
+                while (index3 < lastWord) {
+                    scores.set(index3, scores.get(index3) + (-3 * wordIndex) -  // ++++ word order penalty
+                            charI);  // ++++ char order penalty
+
+                    ++charI;
+                    ++index3;
+                }
+
+                lastWord = word;
+                --wordIndex;
+            }
+
+            lastGroupLimit = groupStart + 1;
+            --index2;
         }
     }
 
@@ -261,7 +262,7 @@ public class Flx {
                                      String query, int queryLength,
                                      int qIndex,
                                      HashMap<Integer, LinkedList<Result>> matchCache) {
-        Integer greaterNum = (greaterThan != null) ? greaterThan : 0;
+        int greaterNum = (greaterThan != null) ? greaterThan : 0;
         Integer hashKey = qIndex + (greaterNum * queryLength);
         LinkedList<Result> hashValue = Util.dictGet(matchCache, hashKey);
 
