@@ -16,6 +16,7 @@ System.out.println(result.score);  // 237
 
 ## 🔗 Links
 
+- [A Step-by-Step Guide to Publishing Your Maven Project to Maven Central Repository](https://medium.com/@hydrurdgn/a-step-by-step-guide-to-publishing-your-maven-project-to-maven-central-repository-7a8928b5e5f5)
 - [Publishing By Using the Maven Plugin](https://central.sonatype.org/publish/publish-portal-maven/#wait-for-publishing)
 
 ## ⚜ License
