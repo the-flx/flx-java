@@ -1,14 +1,11 @@
 package org.the_flx.flx;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Flx {
     /* Variables */
 
-    private static final Character[] WORD_SEPARATORS = new Character[]{
-            ' ', '-', '_', ':', '.', '/', '\\',
-    };
+    private static final Character[] WORD_SEPARATORS = new Character[]{' ', '-', '_', ':', '.', '/', '\\',};
 
     private static final int DEFAULT_SCORE = -35;
 
@@ -21,8 +18,7 @@ public class Flx {
      * @return True if CH is a word character.
      */
     private static Boolean word(Character ch) {
-        if (ch == null)
-            return false;
+        if (ch == null) return false;
 
         return List.of(WORD_SEPARATORS).contains(ch);
     }
@@ -45,14 +41,11 @@ public class Flx {
      * @return True if CH is at the boundary.
      */
     private static Boolean boundary(Character lastCh, Character ch) {
-        if (lastCh == null)
-            return true;
+        if (lastCh == null) return true;
 
-        if (!capital(lastCh) && capital(ch))
-            return true;
+        if (!capital(lastCh) && capital(ch)) return true;
 
-        if (!word(lastCh) && word(ch))
-            return true;
+        if (!word(lastCh) && word(ch)) return true;
 
         return false;
     }
@@ -65,7 +58,7 @@ public class Flx {
      * @param beg The starting index.
      * @param end The end index.
      */
-    private static void incVec(List<Integer> vec, Integer inc, Integer beg, Integer end) {
+    private static void incVec(LinkedList<Integer> vec, Integer inc, Integer beg, Integer end) {
         int _inc = (inc == null) ? 1 : inc;
         int _beg = (beg == null) ? 0 : beg;
         int _end = (end == null) ? vec.size() : end;
@@ -80,7 +73,194 @@ public class Flx {
      * Return hash-table for string where keys are characters.
      * Value is a sorted list of indexes for character occurrences.
      */
-    private static void getHashForString(HashMap<Integer, List<Integer>> result, String str) {
+    private static void getHashForString(HashMap<Integer, LinkedList<Integer>> result, String str) {
+        result.clear();
+
+        int strLen = str.length();
+        int index = strLen - 1;
+        char ch;
+        char downCh;
+
+        while (0 <= index) {
+            ch = str.charAt(index);
+
+            if (capital(ch)) {
+                Util.dictInsert(result, ch, index);
+
+                downCh = Character.toLowerCase(ch);
+            } else {
+                downCh = ch;
+            }
+
+            Util.dictInsert(result, downCh, index);
+
+            --index;
+        }
+    }
+
+    /**
+     * Generate the heatmap vector of string.
+     */
+    public static void GetHeatmapStr(LinkedList<Integer> scores, String str, Character groupSeparator) {
+        int strLen = str.length();
+        int strLastIndex = strLen - 1;
+        scores.clear();
+
+        for (int i = 0; i < strLen; ++i)
+            scores.add(DEFAULT_SCORE);
+
+        int penaltyLead = (int) '.';
+
+        var inner = new LinkedList<Integer>(Arrays.asList(-1, 0));
+        var groupAlist = new LinkedList<LinkedList<Integer>>(Arrays.asList(inner));
+
+        // final char bonus
+        scores.set(strLastIndex, scores.get(strLastIndex) + 1);
+
+        // Establish baseline mapping
+        Character lastCh = null;
+        int groupWordCount = 0;
+        int index1 = 0;
+
+        for (char ch : str.toCharArray()) {
+            // before we find any words, all separaters are
+            // considered words of length 1.  This is so "foo/__ab"
+            // gets penalized compared to "foo/ab".
+            Character effectiveLastChar = ((groupWordCount == 0) ? null : lastCh);
+
+            if (boundary(effectiveLastChar, ch)) {
+                groupAlist.getFirst().add(2, index1);
+            }
+
+            if (!word(lastCh) && word(ch)) {
+                ++groupWordCount;
+            }
+
+            // ++++ -45 penalize extension
+            if (lastCh != null && lastCh == penaltyLead) {
+                scores.set(index1, scores.get(index1) + -45);
+            }
+
+            if (groupSeparator != null && groupSeparator == ch) {
+                groupAlist.getFirst().set(1, groupWordCount);
+
+                groupWordCount = 0;
+                groupAlist.add(0, new LinkedList<Integer>(Arrays.asList(index1, groupWordCount)));
+            }
+
+            if (index1 == strLastIndex) {
+                groupAlist.getFirst().set(1, groupWordCount);
+            } else {
+                lastCh = ch;
+            }
+
+            ++index1;
+
+            int groupCount = groupAlist.size();
+            int separatorCount = groupCount - 1;
+
+            // ++++ slash group-count penalty
+            if (separatorCount != 0) {
+                incVec(scores, groupCount * -2, null, null);
+            }
+
+            int index2 = separatorCount;
+            Integer lastGroupLimit = null;
+            boolean basepathFound = false;
+
+            // score each group further
+            for (LinkedList<Integer> group : groupAlist) {
+                int groupStart = group.get(0);
+                int wordCount = group.get(1);
+                // this is the number of effective word groups
+                int wordsLength = group.size() - 2;
+                boolean basepathP = false;
+
+                if (wordsLength != 0 && !basepathFound) {
+                    basepathFound = true;
+                    basepathP = true;
+                }
+
+                int num;
+                if (basepathP) {
+                    // ++++ basepath separator-count boosts
+                    int boosts = 0;
+                    if (separatorCount > 1) boosts = separatorCount - 1;
+                    // ++++ basepath word count penalty
+                    int penalty = -wordCount;
+                    num = 35 + boosts + penalty;
+                }
+                // ++++ non-basepath penalties
+                else {
+                    if (index2 == 0) num = -3;
+                    else num = -5 + (index2 - 1);
+                }
+
+                incVec(scores, num, groupStart + 1, lastGroupLimit);
+
+                var cddrGroup = new LinkedList<Integer>(group);  // clone it
+                cddrGroup.removeFirst();
+                cddrGroup.removeFirst();
+
+                int wordIndex = wordsLength - 1;
+                int lastWord = (lastGroupLimit != null) ? lastGroupLimit : strLen;
+
+                for (int word : cddrGroup) {
+                    // ++++  beg word bonus AND
+                    scores.set(word, scores.get(word) + 85);
+
+                    int index3 = word;
+                    int charI = 0;
+
+                    while (index3 < lastWord) {
+                        scores.set(index3, scores.get(index3) + (-3 * wordIndex) -  // ++++ word order penalty
+                                charI);  // ++++ char order penalty
+
+                        ++charI;
+                        ++index3;
+                    }
+
+                    lastWord = word;
+                    --wordIndex;
+                }
+
+                lastGroupLimit = groupStart + 1;
+                --index2;
+            }
+        }
+    }
+
+    /**
+     * Return sublist bigger than VAL from sorted SORTED-LIST.
+     * <p>
+     * If VAL is nil, return entire list.
+     */
+    public static void BiggerSublist(LinkedList<Integer> result, LinkedList<Integer> sortedList, Integer val) {
+        if (sortedList == null)
+            return;
+
+        if (val != null) {
+            for (Integer sub : sortedList) {
+                if (sub > val) {
+                    result.add(sub);
+                }
+            }
+        } else {
+            result.addAll(sortedList);
+        }
+    }
+
+    /**
+     * Recursively compute the best match for a string, passed as STR-INFO and
+     * HEATMAP, according to QUERY.
+     */
+    public static void findBestMatch(LinkedList<Result> imatch,
+                                     HashMap<Integer, LinkedList<Integer>> strInfo,
+                                     LinkedList<Integer> heatmap,
+                                     Integer greaterThan,
+                                     String query, int queryLength,
+                                     int qIndex,
+                                     HashMap<Integer, List<Result>> matchCache) {
         // TODO: ..
     }
 
@@ -92,7 +272,32 @@ public class Flx {
      * @return Return the scoring object.
      */
     public static Result score(String str, String query) {
-        return new Result(null, 0, 0);
+        if (str.isEmpty() || query.isEmpty())
+            return null;
+
+        var strInfo = new HashMap<Integer, LinkedList<Integer>>();
+        getHashForString(strInfo, str);
+
+        var heatmap = new LinkedList<Integer>();
+        GetHeatmapStr(heatmap, str, null);
+
+        int queryLength = query.length();
+        boolean fullMatchBoost = (1 < queryLength) && (queryLength < 5);
+        var matchCache = new HashMap<Integer, List<Result>>();
+        var optimalMatch = new LinkedList<Result>();
+        findBestMatch(optimalMatch, strInfo, heatmap, null, query, queryLength, 0, matchCache);
+
+        if (optimalMatch.size() == 0)
+            return null;
+
+        Result result1 = optimalMatch.getFirst();
+        int caar = result1.indices.size();
+
+        if (fullMatchBoost && caar == str.length()) {
+            result1.score += 10000;
+        }
+
+        return result1;
     }
 
     /* Setter & Getter */
