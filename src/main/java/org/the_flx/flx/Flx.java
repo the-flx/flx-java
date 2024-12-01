@@ -101,7 +101,7 @@ public class Flx {
     /**
      * Generate the heatmap vector of string.
      */
-    public static void GetHeatmapStr(LinkedList<Integer> scores, String str, Character groupSeparator) {
+    public static void getHeatmapStr(LinkedList<Integer> scores, String str, Character groupSeparator) {
         int strLen = str.length();
         int strLastIndex = strLen - 1;
         scores.clear();
@@ -235,7 +235,7 @@ public class Flx {
      * <p>
      * If VAL is nil, return entire list.
      */
-    public static void BiggerSublist(LinkedList<Integer> result, LinkedList<Integer> sortedList, Integer val) {
+    public static void biggerSublist(LinkedList<Integer> result, LinkedList<Integer> sortedList, Integer val) {
         if (sortedList == null)
             return;
 
@@ -260,8 +260,72 @@ public class Flx {
                                      Integer greaterThan,
                                      String query, int queryLength,
                                      int qIndex,
-                                     HashMap<Integer, List<Result>> matchCache) {
-        // TODO: ..
+                                     HashMap<Integer, LinkedList<Result>> matchCache) {
+        Integer greaterNum = (greaterThan != null) ? greaterThan : 0;
+        Integer hashKey = qIndex + (greaterNum * queryLength);
+        LinkedList<Result> hashValue = Util.dictGet(matchCache, hashKey);
+
+        if (hashValue != null)  // Process matchCache here
+        {
+            imatch.clear();
+            imatch.addAll(hashValue);
+        } else {
+            int uchar = query.charAt(qIndex);
+            LinkedList<Integer> sortedList = Util.dictGet(strInfo, uchar);
+            var indexes = new LinkedList<Integer>();
+            biggerSublist(indexes, sortedList, greaterThan);
+            int tempScore;
+            int bestScore = Integer.MIN_VALUE;
+
+            if (qIndex >= queryLength - 1) {
+                // At the tail end of the recursion, simply generate all possible
+                // matches with their scores and return the list to parent.
+                for (int index : indexes) {
+                    var indices = new LinkedList<Integer>();
+                    indices.add(index);
+                    imatch.add(new Result(indices, heatmap.get(index), 0));
+                }
+            } else {
+                for (int index : indexes) {
+                    var elemGroup = new LinkedList<Result>();
+                    findBestMatch(elemGroup,
+                            new HashMap<Integer, LinkedList<Integer>>(strInfo),
+                            new LinkedList<Integer>(heatmap),
+                            index, query, queryLength, qIndex + 1, matchCache);
+
+                    for (var elem : elemGroup) {
+                        int caar = elem.indices.getFirst();
+                        int cadr = elem.score;
+                        int cddr = elem.tail;
+
+                        if ((caar - 1) == index) {
+                            tempScore = cadr + heatmap.get(index) +
+                                    (Math.min(cddr, 3) * 15) +  // boost contiguous matches
+                                    60;
+                        } else {
+                            tempScore = cadr + heatmap.get(index);
+                        }
+
+                        // We only care about the optimal match, so only forward the match
+                        // with the best score to parent
+                        if (tempScore > bestScore) {
+                            bestScore = tempScore;
+
+                            imatch.clear();
+                            var indices = new LinkedList<Integer>(elem.indices);
+                            indices.addFirst(index);
+                            int tail = 0;
+                            if ((caar - 1) == index)
+                                tail = cddr + 1;
+                            imatch.add(new Result(indices, tempScore, tail));
+                        }
+                    }
+                }
+            }
+
+            // Calls are cached to avoid exponential time complexity
+            Util.dictSet(matchCache, hashKey, new LinkedList<Result>(imatch));
+        }
     }
 
     /**
@@ -279,15 +343,15 @@ public class Flx {
         getHashForString(strInfo, str);
 
         var heatmap = new LinkedList<Integer>();
-        GetHeatmapStr(heatmap, str, null);
+        getHeatmapStr(heatmap, str, null);
 
         int queryLength = query.length();
         boolean fullMatchBoost = (1 < queryLength) && (queryLength < 5);
-        var matchCache = new HashMap<Integer, List<Result>>();
+        var matchCache = new HashMap<Integer, LinkedList<Result>>();
         var optimalMatch = new LinkedList<Result>();
         findBestMatch(optimalMatch, strInfo, heatmap, null, query, queryLength, 0, matchCache);
 
-        if (optimalMatch.size() == 0)
+        if (optimalMatch.isEmpty())
             return null;
 
         Result result1 = optimalMatch.getFirst();
