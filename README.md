@@ -1,4 +1,5 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Release](https://img.shields.io/github/tag/the-flx/flx-java.svg?label=release&logo=github)](https://github.com/the-flx/flx-java/releases/latest)
 [![Maven Central Version](https://img.shields.io/maven-central/v/io.github.the-flx/flx-java?logo=sonatype)](https://central.sonatype.com/artifact/io.github.the-flx/flx-java)
 
 # flx-java
