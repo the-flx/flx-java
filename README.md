@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
-![Maven Central Version](https://img.shields.io/maven-central/v/io.github.the-flx/flx-java?logo=sonatype)
+[![Maven Central Version](https://img.shields.io/maven-central/v/io.github.the-flx/flx-java?logo=sonatype)](https://central.sonatype.com/artifact/io.github.the-flx/flx-java)
 
 # flx-java
 > Rewrite emacs-flx in Java
