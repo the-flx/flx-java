@@ -3,6 +3,13 @@
 # flx-java
 > Rewrite emacs-flx in Java
 
+## 🔨 Usage
+
+```java
+Result result = Flx.score("switch-to-buffer", "stb");
+System.out.println(result.score);  // 237
+```
+
 ## ⚜ License
 
 Copyright 2024-present Jen-Chieh Shen.
