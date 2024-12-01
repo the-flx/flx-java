@@ -9,5 +9,11 @@ class FlxTest {
     void score() {
         Result result = Flx.score("switch-to-buffer", "stb");
         assertEquals(247, result.score);
+
+        result = Flx.score("TestSomeFunctionExterme", "met");
+        assertEquals(57, result.score);
+
+        result = Flx.score("MetaX_Version", "met");
+        assertEquals(211, result.score);
     }
 }
