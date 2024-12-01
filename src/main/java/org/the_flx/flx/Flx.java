@@ -81,8 +81,8 @@ public class Flx {
      * @param query The query use to score STR.
      * @return Return the scoring object.
      */
-    public static int score(String str, String query) {
-        return 0;
+    public static Result score(String str, String query) {
+        return new Result(null, 0, 0);
     }
 
     /* Setter & Getter */
