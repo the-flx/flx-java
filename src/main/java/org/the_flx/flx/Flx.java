@@ -75,6 +75,16 @@ public class Flx {
         }
     }
 
+    /**
+     * Return best score matching QUERY against STR.
+     * @param str The string to be scored.
+     * @param query The query use to score STR.
+     * @return Return the scoring object.
+     */
+    public static int score(String str, String query) {
+        return 0;
+    }
+
     /* Setter & Getter */
 
 }
