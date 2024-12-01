@@ -12,6 +12,10 @@ Result result = Flx.score("switch-to-buffer", "stb");
 System.out.println(result.score);  // 237
 ```
 
+# Links
+
+- [Publishing By Using the Maven Plugin](https://central.sonatype.org/publish/publish-portal-maven/#wait-for-publishing)
+
 ## ⚜ License
 
 Copyright 2024-present Jen-Chieh Shen.
