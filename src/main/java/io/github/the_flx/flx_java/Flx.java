@@ -73,8 +73,8 @@ public class Flx {
      * Return hash-table for string where keys are characters.
      * Value is a sorted list of indexes for character occurrences.
      */
-    private static void getHashForString(HashMap<Integer, LinkedList<Integer>> result, String str) {
-        result.clear();
+    private static HashMap<Integer, LinkedList<Integer>> getHashForString(String str) {
+        HashMap<Integer, LinkedList<Integer>> result = new HashMap();
 
         int strLen = str.length();
         int index = strLen - 1;
@@ -96,6 +96,8 @@ public class Flx {
 
             --index;
         }
+
+        return result;
     }
 
     /**
@@ -266,8 +268,7 @@ public class Flx {
         Integer hashKey = qIndex + (greaterNum * queryLength);
         LinkedList<Result> hashValue = Util.dictGet(matchCache, hashKey);
 
-        if (hashValue != null)  // Process matchCache here
-        {
+        if (hashValue != null) {  // Process matchCache here
             imatch.clear();
             imatch.addAll(hashValue);
         } else {
@@ -340,8 +341,7 @@ public class Flx {
         if (str.isEmpty() || query.isEmpty())
             return null;
 
-        var strInfo = new HashMap<Integer, LinkedList<Integer>>();
-        getHashForString(strInfo, str);
+        HashMap<Integer, LinkedList<Integer>> strInfo = getHashForString(str);
 
         var heatmap = new LinkedList<Integer>();
         getHeatmapStr(heatmap, str, null);
