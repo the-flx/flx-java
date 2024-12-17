@@ -14,6 +14,12 @@ Result result = Flx.score("switch-to-buffer", "stb");
 System.out.println(result.score);  // 237
 ```
 
+## 🛠️ Development
+
+For testing, we use the [Intellij][] built-in testing library [JUint][].
+
+See Microsoft's support page for more information: [Walkthrough: Create and run unit tests for managed code](https://learn.microsoft.com/en-us/visualstudio/test/walkthrough-creating-and-running-unit-tests-for-managed-code).
+
 ## 🔗 Links
 
 - [A Step-by-Step Guide to Publishing Your Maven Project to Maven Central Repository](https://medium.com/@hydrurdgn/a-step-by-step-guide-to-publishing-your-maven-project-to-maven-central-repository-7a8928b5e5f5)
@@ -36,3 +42,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 See [`LICENSE`](./LICENSE) for details.
+
+
+<!-- Links -->
+
+[Intellij]: https://www.jetbrains.com/idea/
+[JUint]: https://junit.org/
