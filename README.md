@@ -16,7 +16,7 @@ System.out.println(result.score);  // 237
 
 ## 🛠️ Development
 
-For testing, we use the [Intellij][] built-in testing library [JUint][].
+For testing, we use [IntelliJ][]'s built-in testing library, [JUnit][].
 
 See Microsoft's support page for more information: [Walkthrough: Create and run unit tests for managed code](https://learn.microsoft.com/en-us/visualstudio/test/walkthrough-creating-and-running-unit-tests-for-managed-code).
 
