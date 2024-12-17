@@ -47,4 +47,4 @@ See [`LICENSE`](./LICENSE) for details.
 <!-- Links -->
 
 [Intellij]: https://www.jetbrains.com/idea/
-[JUint]: https://junit.org/
+[JUnit]: https://junit.org/
